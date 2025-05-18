@@ -24,6 +24,7 @@ from torch.nn.utils import clip_grad_norm_
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
 from sklearn.svm import OneClassSVM
+from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 
 from xgboost import XGBClassifier
@@ -45,38 +46,256 @@ def pkt_features(pkt, prev_ts):
 
 
 def cmd_extract(args):
+    from collections import defaultdict
+
     reader = PcapReader(args.pcap)
-    wf = open(args.output, "w", newline="")
-    writer = csv.writer(wf)
-    lf = open(args.labels, "w")
-    samples, prev_ts = [], 0.0
+    stream_dict = defaultdict(list)
+
+    data_frame_count = 0  # Data 프레임 수
+    skipped_mac_none = 0  # MAC None으로 스킵된 패킷 수
 
     for pkt in reader:
-        if not pkt.haslayer(RadioTap) or not pkt.haslayer(Dot11):
+        if not pkt.haslayer(Dot11):
             continue
-        if pkt[Dot11].type != 2:
+
+        dot11 = pkt[Dot11]
+        if dot11.type != 2:
             continue
-        fts, prev_ts = pkt_features(pkt[RadioTap], prev_ts)
-        samples.append(fts)
+
+        src_mac = dot11.addr2
+        dst_mac = dot11.addr1
+        if src_mac is None or dst_mac is None:
+            skipped_mac_none += 1
+            continue
+
+        data_frame_count += 1
+        key = (src_mac, dst_mac)
+        stream_dict[key].append(pkt)
     reader.close()
 
-    W = args.window
-    for i in range(len(samples) - W + 1):
-        window = samples[i : i + W]
-        if args.model_type == "ffnn":
-            arr = np.array(window)
-            feats = []
-            for col in arr.T:
-                feats += [float(col.mean()), float(col.var())]
-            writer.writerow(feats)
-        else:
-            flat = np.array(window).reshape(-1).tolist()
-            writer.writerow(flat)
-        lf.write(f"{args.label}\n")
+    print("총 Data 프레임 수:", data_frame_count)
+    print("MAC None으로 스킵된 프레임 수:", skipped_mac_none)
+    print("생성된 스트림 수:", len(stream_dict))
 
-    wf.close()
-    lf.close()
-    print(f"Extracted {len(samples)-W+1} windows")
+    with open(args.output, "w", newline="") as wf, open(args.labels, "w") as lf:
+        writer = csv.writer(wf)
+        writer.writerow(
+            [
+                "stream_key",
+                "total_inbound",
+                "total_outbound",
+                "mean_interval",
+                "std_interval",
+                "pkt_count",
+            ]
+        )
+
+        written_streams = 0  # csv에 기록한 스트림 수
+
+        for (src, dst), pkts in stream_dict.items():
+            inbound_bytes = outbound_bytes = 0
+            last_time = None
+            intervals = []
+
+            for pkt in pkts:
+                plen = len(pkt)
+                pkt_src = pkt[Dot11].addr2
+
+                if pkt_src == src:
+                    outbound_bytes += plen
+                elif pkt_src == dst:
+                    inbound_bytes += plen
+
+                if last_time is not None:
+                    intervals.append(float(pkt.time) - float(last_time))
+                last_time = pkt.time
+
+            mean_interval = np.mean(intervals) if intervals else 0
+            std_interval = np.std(intervals) if intervals else 0
+
+            stream_key = f"{src}|{dst}"
+
+            # ★ 디버깅용 프린트로 각 스트림의 특징값 출력
+            print(
+                f"Stream {stream_key}: inbound={inbound_bytes}, outbound={outbound_bytes}, pkts={len(pkts)}"
+            )
+
+            # 이 조건을 일단 제거하거나, 매우 낮게 설정해서 기록 여부 확인!
+            writer.writerow(
+                [
+                    stream_key,
+                    inbound_bytes,
+                    outbound_bytes,
+                    mean_interval,
+                    std_interval,
+                    len(pkts),
+                ]
+            )
+            lf.write("0\n")  # 테스트용으로 모든 라벨을 0으로 일단 기록
+            written_streams += 1
+
+        print("CSV에 기록된 총 스트림 수:", written_streams)
+
+    from collections import defaultdict
+
+    reader = PcapReader(args.pcap)
+    stream_dict = defaultdict(list)
+
+    for pkt in reader:
+        if not pkt.haslayer(Dot11):
+            continue
+
+        dot11 = pkt[Dot11]
+        if dot11.type != 2:  # Data 프레임만
+            continue
+
+        # MAC 주소 명확하게 설정 (송신자→수신자)
+        src_mac = dot11.addr2  # 송신자 (Sender)
+        dst_mac = dot11.addr1  # 수신자 (Receiver)
+
+        if src_mac is None or dst_mac is None:
+            continue
+
+        key = (src_mac, dst_mac)
+        stream_dict[key].append(pkt)
+    reader.close()
+
+    with open(args.output, "w", newline="") as wf, open(args.labels, "w") as lf:
+        writer = csv.writer(wf)
+        writer.writerow(
+            [
+                "stream_key",
+                "total_inbound",
+                "total_outbound",
+                "mean_interval",
+                "std_interval",
+                "pkt_count",
+            ]
+        )
+
+        for (src, dst), pkts in stream_dict.items():
+            inbound_bytes = outbound_bytes = 0
+            last_time = None
+            intervals = []
+
+            for pkt in pkts:
+                plen = len(pkt)
+                pkt_src = pkt[Dot11].addr2
+                pkt_dst = pkt[Dot11].addr1
+
+                # pkt_src가 src면 outbound, pkt_src가 dst면 inbound로 명확히 처리
+                if pkt_src == src:
+                    outbound_bytes += plen
+                elif pkt_src == dst:
+                    inbound_bytes += plen
+
+                if last_time is not None:
+                    intervals.append(float(pkt.time) - float(last_time))
+                last_time = pkt.time
+
+            mean_interval = np.mean(intervals) if intervals else 0
+            std_interval = np.std(intervals) if intervals else 0
+
+            stream_key = f"{src}|{dst}"
+            writer.writerow(
+                [
+                    stream_key,
+                    inbound_bytes,
+                    outbound_bytes,
+                    mean_interval,
+                    std_interval,
+                    len(pkts),
+                ]
+            )
+
+            # 간단한 rule-based 라벨링 (임의로 설정한 예시 조건)
+            is_camera = (
+                outbound_bytes > 1_000_000
+                and inbound_bytes > 1_000_000
+                and len(pkts) > 10
+            )
+            lf.write(f"{int(is_camera)}\n")
+
+    print(f"Extracted {len(stream_dict)} streams")
+
+    from collections import defaultdict
+
+    reader = PcapReader(args.pcap)
+    # 스트림 딕셔너리: {(src_mac, dst_mac): [pkt, pkt, ...]}
+    stream_dict = defaultdict(list)
+
+    for pkt in reader:
+        if not pkt.haslayer(Dot11):
+            continue
+
+        dot11 = pkt[Dot11]
+        # 1. Data 프레임만 사용
+        if dot11.type != 2:
+            continue
+
+        src_mac = dot11.addr2
+        dst_mac = dot11.addr1
+        # 2. 주소가 없는 패킷 예외 처리
+        if src_mac is None or dst_mac is None:
+            continue
+
+        key = (src_mac, dst_mac)
+        stream_dict[key].append(pkt)
+    reader.close()
+
+    with open(args.output, "w", newline="") as wf, open(args.labels, "w") as lf:
+        writer = csv.writer(wf)
+        # 예시 header: stream_key, total_in, total_out, mean_interval, ...
+        writer.writerow(
+            [
+                "stream_key",
+                "total_inbound",
+                "total_outbound",
+                "mean_interval",
+                "std_interval",
+                "pkt_count",
+            ]
+        )
+
+        for (src, dst), pkts in stream_dict.items():
+            # 패킷 방향별 분리
+            inbound_bytes = outbound_bytes = 0
+            last_time = None
+            intervals = []
+            for pkt in pkts:
+                plen = len(pkt)
+                if pkt[Dot11].addr1 == src:
+                    outbound_bytes += plen
+                else:
+                    inbound_bytes += plen
+                if last_time is not None:
+                    # **여기서 float 강제 변환!**
+                    intervals.append(float(pkt.time) - float(last_time))
+                last_time = pkt.time
+
+            mean_interval = np.mean(intervals) if intervals else 0
+            std_interval = np.std(intervals) if intervals else 0
+
+            # stream_key: src_mac|dst_mac 형식
+            stream_key = f"{src}|{dst}"
+            writer.writerow(
+                [
+                    stream_key,
+                    inbound_bytes,
+                    outbound_bytes,
+                    mean_interval,
+                    std_interval,
+                    len(pkts),
+                ]
+            )
+
+            # Rule-based 라벨 지정 (예시, 필요시 확장)
+            is_camera = (
+                total_inbound >= 90000 and mean_interval <= 1.0 and pkt_count <= 1000
+            )
+            lf.write(f"{int(is_camera)}\n")
+
+    print(f"Extracted {len(stream_dict)} streams")
 
 
 # ------------------------- dataset classes --------------------------- #
@@ -190,6 +409,30 @@ def cmd_train(args):
         X_train = scaler.transform(flat_train).reshape(N, W, D)
         X_val = scaler.transform(flat_val).reshape(X_val.shape[0], W, D)
     # (Optional) save scaler: joblib.dump(scaler, args.model + ".scaler")
+
+    # (3-1) Supervised SVM branch
+    if args.use_svm:
+        # sklearn.svm.SVC은 기본적으로 probability=False이므로
+        svm = SVC(
+            kernel="rbf",  # RBF 커널 예시
+            probability=True,  # ROC AUC 등을 위해 필요시 True
+            class_weight="balanced",  # 클래스 불균형 보정
+            C=1.0,
+            gamma="scale",  # 기본 하이퍼파라미터
+        )
+        # X_train, X_val은 이미 NumPy 배열 형태
+        svm.fit(X_train, y_train)
+        y_pred = svm.predict(X_val)
+        y_prob = svm.predict_proba(X_val)[:, 1]
+
+        print("=== SVM Validation ===")
+        print(confusion_matrix(y_val, y_pred))
+        print(classification_report(y_val, y_pred, digits=4))
+        print("ROC AUC:", roc_auc_score(y_val, y_prob))
+
+        # 모델 저장
+        joblib.dump(svm, args.model + ".svm.pkl")
+        return
 
     # 3) XGBoost branch
     if args.use_xgb and args.model_type == "ffnn":
@@ -367,6 +610,11 @@ def parse_args():
     t.add_argument("-w", "--window", type=int, default=11)
     t.add_argument("--epochs", type=int, default=20)
     t.add_argument("--batch", type=int, default=64)
+    t.add_argument(
+        "--use-svm",
+        action="store_true",
+        help="Use supervised SVM classifier instead of NN/XGBoost",
+    )
     t.add_argument("--use-xgb", action="store_true")
     t.add_argument(
         "--model-type", choices=("ffnn", "lstm", "transformer"), default="ffnn"

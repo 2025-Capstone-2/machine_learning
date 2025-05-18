@@ -1,0 +1,183 @@
+No.     Time           Source                Destination           Protocol Length Info
+    366 7.662929       0e:ce:15:57:a5:ba     02:00:11:22:3b:f2     802.11   47     802.11 Block Ack, Flags=........C
+
+Frame 366: 47 bytes on wire (376 bits), 47 bytes captured (376 bits)
+    Encapsulation type: IEEE 802.11 plus radiotap radio header (23)
+    Arrival Time: May  7, 2025 17:10:37.074904000 대한민국 표준시
+    UTC Arrival Time: May  7, 2025 08:10:37.074904000 UTC
+    Epoch Arrival Time: 1746605437.074904000
+    [Time shift for this packet: 0.000000000 seconds]
+    [Time delta from previous captured frame: 0.000091000 seconds]
+    [Time delta from previous displayed frame: 0.000091000 seconds]
+    [Time since reference or first frame: 7.662929000 seconds]
+    Frame Number: 366
+    Frame Length: 47 bytes (376 bits)
+    Capture Length: 47 bytes (376 bits)
+    [Frame is marked: False]
+    [Frame is ignored: False]
+    [Protocols in frame: radiotap:wlan_radio:wlan]
+    [Coloring Rule Name: 새로운 색상 규칙]
+    [Coloring Rule String: wlan.addr == 0e:ce:15:57:a5:ba]
+Radiotap Header v0, Length 15
+    Header revision: 0
+    Header pad: 0
+    Header length: 15
+    Present flags
+        Present flags word: 0x0000002a
+            .... .... .... .... .... .... .... ...0 = TSFT: Absent
+            .... .... .... .... .... .... .... ..1. = Flags: Present
+            .... .... .... .... .... .... .... .0.. = Rate: Absent
+            .... .... .... .... .... .... .... 1... = Channel: Present
+            .... .... .... .... .... .... ...0 .... = FHSS: Absent
+            .... .... .... .... .... .... ..1. .... = dBm Antenna Signal: Present
+            .... .... .... .... .... .... .0.. .... = dBm Antenna Noise: Absent
+            .... .... .... .... .... .... 0... .... = Lock Quality: Absent
+            .... .... .... .... .... ...0 .... .... = TX Attenuation: Absent
+            .... .... .... .... .... ..0. .... .... = dB TX Attenuation: Absent
+            .... .... .... .... .... .0.. .... .... = dBm TX Power: Absent
+            .... .... .... .... .... 0... .... .... = Antenna: Absent
+            .... .... .... .... ...0 .... .... .... = dB Antenna Signal: Absent
+            .... .... .... .... ..0. .... .... .... = dB Antenna Noise: Absent
+            .... .... .... .... .0.. .... .... .... = RX flags: Absent
+            .... .... .... .... 0... .... .... .... = TX flags: Absent
+            .... .... .... ..0. .... .... .... .... = data retries: Absent
+            .... .... .... .0.. .... .... .... .... = Channel+: Absent
+            .... .... .... 0... .... .... .... .... = MCS information: Absent
+            .... .... ...0 .... .... .... .... .... = A-MPDU Status: Absent
+            .... .... ..0. .... .... .... .... .... = VHT information: Absent
+            .... .... .0.. .... .... .... .... .... = frame timestamp: Absent
+            .... .... 0... .... .... .... .... .... = HE information: Absent
+            .... ...0 .... .... .... .... .... .... = HE-MU information: Absent
+            .... .0.. .... .... .... .... .... .... = 0 Length PSDU: Absent
+            .... 0... .... .... .... .... .... .... = L-SIG: Absent
+            .... ..0. .... .... .... .... .... .... = Reserved: 0x0
+            ...0 .... .... .... .... .... .... .... = TLVs: Absent
+            ..0. .... .... .... .... .... .... .... = Radiotap NS next: False
+            .0.. .... .... .... .... .... .... .... = Vendor NS next: False
+            0... .... .... .... .... .... .... .... = Ext: Absent
+    Flags: 0x10
+        .... ...0 = CFP: False
+        .... ..0. = Preamble: Long
+        .... .0.. = WEP: False
+        .... 0... = Fragmentation: False
+        ...1 .... = FCS at end: True
+        ..0. .... = Data Pad: False
+        .0.. .... = Bad FCS: False
+        0... .... = Short GI: False
+    Channel frequency: 0
+    Channel flags: 0x0000
+        .... .... .... ...0 = 700 MHz spectrum: False
+        .... .... .... ..0. = 800 MHz spectrum: False
+        .... .... .... .0.. = 900 MHz spectrum: False
+        .... .... ...0 .... = Turbo: False
+        .... .... ..0. .... = Complementary Code Keying (CCK): False
+        .... .... .0.. .... = Orthogonal Frequency-Division Multiplexing (OFDM): False
+        .... .... 0... .... = 2 GHz spectrum: False
+        .... ...0 .... .... = 5 GHz spectrum: False
+        .... ..0. .... .... = Passive: False
+        .... .0.. .... .... = Dynamic CCK-OFDM: False
+        .... 0... .... .... = Gaussian Frequency Shift Keying (GFSK): False
+        ...0 .... .... .... = GSM (900MHz): False
+        ..0. .... .... .... = Static Turbo: False
+        .0.. .... .... .... = Half Rate Channel (10MHz Channel Width): False
+        0... .... .... .... = Quarter Rate Channel (5MHz Channel Width): False
+    Antenna signal: -50 dBm
+802.11 radio information
+    Signal strength (dBm): -50 dBm
+IEEE 802.11 802.11 Block Ack, Flags: ........C
+    Type/Subtype: 802.11 Block Ack (0x0019)
+    Frame Control Field: 0x9400
+        .... ..00 = Version: 0
+        .... 01.. = Type: Control frame (1)
+        1001 .... = Subtype: 9
+        Flags: 0x00
+            .... ..00 = DS status: Not leaving DS or network is operating in AD-HOC mode (To DS: 0 From DS: 0) (0x0)
+            .... .0.. = More Fragments: This is the last fragment
+            .... 0... = Retry: Frame is not being retransmitted
+            ...0 .... = PWR MGT: STA will stay up
+            ..0. .... = More Data: No data buffered
+            .0.. .... = Protected flag: Data is not protected
+            0... .... = +HTC/Order flag: Not strictly ordered
+    .000 0000 0000 0000 = Duration: 0 microseconds
+    Receiver address: 02:00:11:22:3b:f2 (02:00:11:22:3b:f2)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Transmitter address: 0e:ce:15:57:a5:ba (0e:ce:15:57:a5:ba)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Compressed BlockAck Response
+        Block Ack Control: 0x0004
+            .... .... .... ...0 = BA Ack Policy: Immediate Acknowledgement Required
+            .... .... ...0 010. = BA Type: Compressed BlockAck (0x2)
+            .... 0000 000. .... = Reserved: 0x00
+            0000 .... .... .... = TID for which a Basic BlockAck frame is requested: 0x0
+        Block Ack Starting Sequence Control (SSC): 0x6870
+            .... .... .... 0000 = Fragment: 0
+            0110 1000 0111 .... = Starting Sequence Number: 1671
+        Block Ack Bitmap: 0100000000000000
+            Missing frame: 1672
+            Missing frame: 1673
+            Missing frame: 1674
+            Missing frame: 1675
+            Missing frame: 1676
+            Missing frame: 1677
+            Missing frame: 1678
+            Missing frame: 1679
+            Missing frame: 1680
+            Missing frame: 1681
+            Missing frame: 1682
+            Missing frame: 1683
+            Missing frame: 1684
+            Missing frame: 1685
+            Missing frame: 1686
+            Missing frame: 1687
+            Missing frame: 1688
+            Missing frame: 1689
+            Missing frame: 1690
+            Missing frame: 1691
+            Missing frame: 1692
+            Missing frame: 1693
+            Missing frame: 1694
+            Missing frame: 1695
+            Missing frame: 1696
+            Missing frame: 1697
+            Missing frame: 1698
+            Missing frame: 1699
+            Missing frame: 1700
+            Missing frame: 1701
+            Missing frame: 1702
+            Missing frame: 1703
+            Missing frame: 1704
+            Missing frame: 1705
+            Missing frame: 1706
+            Missing frame: 1707
+            Missing frame: 1708
+            Missing frame: 1709
+            Missing frame: 1710
+            Missing frame: 1711
+            Missing frame: 1712
+            Missing frame: 1713
+            Missing frame: 1714
+            Missing frame: 1715
+            Missing frame: 1716
+            Missing frame: 1717
+            Missing frame: 1718
+            Missing frame: 1719
+            Missing frame: 1720
+            Missing frame: 1721
+            Missing frame: 1722
+            Missing frame: 1723
+            Missing frame: 1724
+            Missing frame: 1725
+            Missing frame: 1726
+            Missing frame: 1727
+            Missing frame: 1728
+            Missing frame: 1729
+            Missing frame: 1730
+            Missing frame: 1731
+            Missing frame: 1732
+            Missing frame: 1733
+            Missing frame: 1734
+    Frame check sequence: 0x73b9425d [unverified]
+    [FCS Status: Unverified]
+    [WLAN Flags: ........C]
